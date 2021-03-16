@@ -14,31 +14,52 @@ class Window(QMainWindow, Ui_MainWindow):
         super().__init__()
         self.setupUi(self)
         self.setWindowTitle('Большая задача по Maps API.')
-        self.num = 0
+        self.coordX.setText('10.7461'), self.coordY.setText('59.9127'), self.coordZ.setValue(16)
+        self.Button.clicked.connect(self.generation_map)
+        self.keyboard.stateChanged.connect(self.keyboard_ON)
 
-        self.pushButton.clicked.connect(self.generation_map)
+    def keyboard_ON(self):
+        if self.keyboard.isChecked():
+            self.coordX.setEnabled(False)
+            self.coordY.setEnabled(False)
+            self.coordZ.setEnabled(False)
+        else:
+            self.coordX.setEnabled(True)
+            self.coordY.setEnabled(True)
+            self.coordZ.setEnabled(True)
 
     def generation_map(self):
-        map_request = f"http://static-maps.yandex.ru/1.x/?ll={self.line_coordinateX.text()},{self.line_coordinateY.text()}&z={self.sbox_coordinateZ.text()}&l=map"
+        map_request = f"http://static-maps.yandex.ru/1.x/?ll={self.coordX.text()},{self.coordY.text()}&z={self.coordZ.text()}&l=sat"
         response = requests.get(map_request)
         self.map_file = "map.png"
 
-        with open(self.map_file, "wb") as file:
-            file.write(response.content)
-        self.display_map()
-
-    def display_map(self):
-        self.pixmap = QPixmap(self.map_file)
-        self.picture.setPixmap(self.pixmap)
+        with open(self.map_file, "wb") as image:
+            image.write(response.content)
+            self.pixmap = QPixmap(self.map_file)
+            self.picture.setPixmap(self.pixmap)
         os.remove(self.map_file)
 
     def keyPressEvent(self, event):
-        if event.key() == Qt.Key_PageUp:
-            self.num = 1
-        if event.key() == Qt.Key_PageDown:
-            self.num = -1
-        self.sbox_coordinateZ.setValue(int(self.sbox_coordinateZ.text()) + self.num)
-        self.generation_map()
+        self.pos_x, self.pos_y = 0, 0
+        if self.keyboard.isChecked():
+            if event.key() == Qt.Key_W:
+                self.pos_y = -0.01
+            if event.key() == Qt.Key_S:
+                self.pos_y = 0.01
+            if event.key() == Qt.Key_A:
+                self.pos_x = 0.01
+            if event.key() == Qt.Key_D:
+                self.pos_x = -0.01
+            new_pos_x = float(self.coordX.text().replace(',', '.')) + self.pos_x
+            new_pos_y = float(self.coordY.text().replace(',', '.')) + self.pos_y
+            self.coordX.setText(str(new_pos_x))
+            self.coordY.setText(str(new_pos_y))
+
+            if event.key() == Qt.Key_PageUp:
+                self.coordZ.setValue(int(self.coordZ.text()) + 1)
+            if event.key() == Qt.Key_PageDown:
+                self.coordZ.setValue(int(self.coordZ.text()) - 1)
+            self.generation_map()
 
 
 def except_hook(cls, exception, traceback):
