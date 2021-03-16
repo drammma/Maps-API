@@ -16,6 +16,7 @@ class Window(QMainWindow, Ui_MainWindow):
         self.setWindowTitle('Большая задача по Maps API.')
         self.Button.clicked.connect(self.generation_map)
         self.keyboard.stateChanged.connect(self.keyboard_ON)
+        self.types_cart = {'Спутник': 'sat', 'Гибрид': 'skl', 'Схема': 'map'}
 
     def keyboard_ON(self):
         if self.keyboard.isChecked():
@@ -28,12 +29,17 @@ class Window(QMainWindow, Ui_MainWindow):
             self.coordZ.setEnabled(True)
 
     def generation_map(self):
-        map_request = f"http://static-maps.yandex.ru/1.x/?ll={self.coordX.text()},{self.coordY.text()}&z={self.coordZ.text()}&l=sat"
-        response = requests.get(map_request)
+        api_server = 'http://static-maps.yandex.ru/1.x/'
+        params = {
+            "ll": ",".join([self.coordX.text(), self.coordY.text()]),
+            "z": self.coordZ.text(),
+            "l": self.types_cart[self.type_cart.currentText()]
+        }
+        map_request = requests.get(api_server, params=params)
         self.map_file = "map.png"
 
         with open(self.map_file, "wb") as image:
-            image.write(response.content)
+            image.write(map_request.content)
             self.pixmap = QPixmap(self.map_file)
             self.picture.setPixmap(self.pixmap)
         os.remove(self.map_file)
