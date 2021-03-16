@@ -14,7 +14,6 @@ class Window(QMainWindow, Ui_MainWindow):
         super().__init__()
         self.setupUi(self)
         self.setWindowTitle('Большая задача по Maps API.')
-        self.coordX.setText('10.7461'), self.coordY.setText('59.9127'), self.coordZ.setValue(16)
         self.Button.clicked.connect(self.generation_map)
         self.keyboard.stateChanged.connect(self.keyboard_ON)
 
