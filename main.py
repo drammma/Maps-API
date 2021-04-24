@@ -2,7 +2,6 @@ import os
 
 import sys
 import requests
-
 from PyQt5.QtWidgets import QApplication, QMainWindow
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import Qt
@@ -29,14 +28,42 @@ class Window(QMainWindow, Ui_MainWindow):
             self.coordZ.setEnabled(True)
 
     def generation_map(self):
-        api_server = 'http://static-maps.yandex.ru/1.x/'
-        params = {
-            "ll": ",".join([self.coordX.text(), self.coordY.text()]),
-            "z": self.coordZ.text(),
-            "l": self.types_cart[self.type_cart.currentText()]
-        }
-        map_request = requests.get(api_server, params=params)
-        self.map_file = "map.png"
+        if self.Address_line:
+            # Москва, ул. Ак. Королева, 12
+            toponym_to_find = '+'.join(self.Address_line.text().split())
+            geocoder_api_server = "http://geocode-maps.yandex.ru/1.x/"
+            geocoder_params = {
+                "apikey": "40d1649f-0493-4b70-98ba-98533de7710b",
+                "geocode": toponym_to_find,
+                "format": "json"}
+            response = requests.get(geocoder_api_server, params=geocoder_params)
+
+            json_response = response.json()
+            toponym = json_response["response"]["GeoObjectCollection"][
+                "featureMember"][0]["GeoObject"]
+            toponym_coodrinates = toponym["Point"]["pos"]
+            toponym_longitude, toponym_lattitude = toponym_coodrinates.split(" ")
+            map_params = {
+                "ll": ",".join([toponym_longitude, toponym_lattitude]),
+                "z": self.coordZ.text(),
+                "l": self.types_cart[self.type_cart.currentText()]
+            }
+            self.coordX.setText(str(toponym_longitude))
+            self.coordY.setText(str(toponym_lattitude))
+            api_server = "http://static-maps.yandex.ru/1.x/"
+            map_request = requests.get(api_server, params=map_params)
+            self.map_file = "map.png"
+
+        else:
+            api_server = 'http://static-maps.yandex.ru/1.x/'
+            params = {
+                "ll": ",".join([self.coordX.text(), self.coordY.text()]),
+                "z": self.coordZ.text(),
+                "l": self.types_cart[self.type_cart.currentText()]
+            }
+            map_request = requests.get(api_server, params=params)
+            self.map_file = "map.png"
+
 
         with open(self.map_file, "wb") as image:
             image.write(map_request.content)
