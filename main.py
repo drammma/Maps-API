@@ -47,14 +47,14 @@ class Window(QMainWindow, Ui_MainWindow):
     def keyPressEvent(self, event):
         self.pos_x, self.pos_y = 0, 0
         if self.keyboard.isChecked():
-            if event.key() == Qt.Key_W:
-                self.pos_y = -0.01
-            if event.key() == Qt.Key_S:
-                self.pos_y = 0.01
-            if event.key() == Qt.Key_A:
-                self.pos_x = 0.01
-            if event.key() == Qt.Key_D:
-                self.pos_x = -0.01
+            if event.key() == Qt.Key_Up:
+                self.pos_y = -1
+            if event.key() == Qt.Key_Down:
+                self.pos_y = 1
+            if event.key() == Qt.Key_Right:
+                self.pos_x = 1
+            if event.key() == Qt.Key_Left:
+                self.pos_x = -1
             new_pos_x = float(self.coordX.text().replace(',', '.')) + self.pos_x
             new_pos_y = float(self.coordY.text().replace(',', '.')) + self.pos_y
             self.coordX.setText(str(new_pos_x))
